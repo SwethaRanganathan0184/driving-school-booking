@@ -14,10 +14,19 @@ type Package = {
   instructor_id: string
 }
 
+type Booking = {
+  id: string
+  package_id: string
+  slot_start: string
+  slot_end: string
+  status: string
+}
+
 export default function CustomerPackagesPage() {
   const router = useRouter()
   const [customerId, setCustomerId] = useState<string | null>(null)
   const [packages, setPackages] = useState<Package[]>([])
+  const [upcomingBookings, setUpcomingBookings] = useState<Record<string, Booking[]>>({})
   const [instructorNames, setInstructorNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [actionKey, setActionKey] = useState<string | null>(null)
@@ -32,6 +41,26 @@ export default function CustomerPackagesPage() {
 
     const packagesList = (packageRows ?? []) as Package[]
     setPackages(packagesList)
+
+    const packageIds = packagesList.map((p) => p.id)
+    if (packageIds.length > 0) {
+      const { data: bookingRows } = await supabase
+        .from('bookings')
+        .select('id, package_id, slot_start, slot_end, status')
+        .in('package_id', packageIds)
+        .eq('status', 'confirmed')
+        .order('slot_start')
+
+      const now = new Date()
+      const grouped: Record<string, Booking[]> = {}
+      ;(bookingRows ?? []).forEach((b) => {
+        if (new Date(b.slot_start) > now) {
+          if (!grouped[b.package_id]) grouped[b.package_id] = []
+          grouped[b.package_id].push(b as Booking)
+        }
+      })
+      setUpcomingBookings(grouped)
+    }
 
     const instructorIds = [...new Set(packagesList.map((p) => p.instructor_id))]
     if (instructorIds.length === 0) return
@@ -65,7 +94,7 @@ export default function CustomerPackagesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleCancel = async (pkg: Package) => {
+  const handleCancelPackage = async (pkg: Package) => {
     if (!customerId) return
 
     const confirmed = window.confirm(
@@ -89,19 +118,9 @@ export default function CustomerPackagesPage() {
       return
     }
 
-    const { data: futureBookings } = await supabase
-      .from('bookings')
-      .select('id, slot_start')
-      .eq('package_id', pkg.id)
-      .eq('status', 'confirmed')
-
-    const now = new Date()
-    const futureBookingIds = (futureBookings ?? [])
-      .filter((b) => new Date(b.slot_start) > now)
-      .map((b) => b.id)
-
-    if (futureBookingIds.length > 0) {
-      await supabase.from('bookings').update({ status: 'cancelled' }).in('id', futureBookingIds)
+    const futureIds = (upcomingBookings[pkg.id] ?? []).map((b) => b.id)
+    if (futureIds.length > 0) {
+      await supabase.from('bookings').update({ status: 'cancelled' }).in('id', futureIds)
     }
 
     if (pkg.classes_completed > 0) {
@@ -109,6 +128,40 @@ export default function CustomerPackagesPage() {
         package_id: pkg.id,
         amount: pkg.classes_completed * pkg.price_per_class,
       })
+    }
+
+    setActionKey(null)
+    await loadPackages(customerId)
+  }
+
+  const handleCancelBooking = async (booking: Booking, pkg: Package) => {
+    if (!customerId) return
+
+    const confirmed = window.confirm(
+      `Cancel this class on ${new Date(booking.slot_start).toLocaleDateString()} at ${new Date(
+        booking.slot_start
+      ).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`
+    )
+    if (!confirmed) return
+
+    setActionKey(booking.id)
+    setError(null)
+
+    const { error: bookingError } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', booking.id)
+
+    if (bookingError) {
+      setError(bookingError.message)
+      setActionKey(null)
+      return
+    }
+
+    // A single-class package only ever has one booking — cancelling it
+    // means the whole package is done, and nothing was completed, so nothing is owed.
+    if (pkg.package_type === 'single') {
+      await supabase.from('packages').update({ status: 'cancelled' }).eq('id', pkg.id)
     }
 
     setActionKey(null)
@@ -147,14 +200,43 @@ export default function CustomerPackagesPage() {
                   {pkg.classes_completed}/{pkg.classes_total} classes completed
                 </p>
               )}
+
+              {/* Upcoming, not-yet-happened classes under this package */}
+              {(upcomingBookings[pkg.id] ?? []).length > 0 && pkg.status === 'active' && (
+                <div className="mt-3 space-y-2">
+                  {upcomingBookings[pkg.id].map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between bg-[#F7F8FA] rounded-md px-3 py-2"
+                    >
+                      <span className="text-sm text-[#16213E]">
+                        {new Date(booking.slot_start).toLocaleDateString()}{' '}
+                        {new Date(booking.slot_start).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={actionKey === booking.id}
+                        onClick={() => handleCancelBooking(booking, pkg)}
+                        className="text-xs text-[#B3261E] hover:underline disabled:opacity-60"
+                      >
+                        {actionKey === booking.id ? 'Cancelling...' : 'Cancel this class'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {pkg.package_type === 'ten_pack' && pkg.status === 'active' && (
                 <button
                   type="button"
                   disabled={actionKey === pkg.id}
-                  onClick={() => handleCancel(pkg)}
+                  onClick={() => handleCancelPackage(pkg)}
                   className="mt-3 text-sm rounded-md border border-[#B3261E] text-[#B3261E] px-3 py-1.5 hover:bg-[#B3261E] hover:text-white transition-colors disabled:opacity-60"
                 >
-                  {actionKey === pkg.id ? 'Cancelling...' : 'Cancel package'}
+                  {actionKey === pkg.id ? 'Cancelling...' : 'Cancel entire package'}
                 </button>
               )}
             </li>

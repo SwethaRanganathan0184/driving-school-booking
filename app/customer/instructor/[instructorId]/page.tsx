@@ -133,11 +133,12 @@ export default function BookInstructorPage() {
       .eq('status', 'active')
       .maybeSingle()
 
-    if (existing) {
+        if (existing) {
       const { count } = await supabase
         .from('bookings')
         .select('*', { count: 'exact', head: true })
         .eq('package_id', existing.id)
+        .neq('status', 'cancelled')
 
       if ((count ?? 0) < existing.classes_total) {
         return existing.id
