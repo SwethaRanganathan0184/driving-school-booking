@@ -50,13 +50,24 @@ export default function BookInstructorPage() {
   }, [instructorId])
 
   useEffect(() => {
-    const init = async () => {
+        const init = async () => {
       const { data: sessionData } = await supabase.auth.getSession()
       if (!sessionData.session) {
         router.push('/login')
         return
       }
       setCustomerId(sessionData.session.user.id)
+
+      const { data: vehicle } = await supabase
+        .from('customer_vehicles')
+        .select('id')
+        .eq('customer_id', sessionData.session.user.id)
+        .maybeSingle()
+
+      if (!vehicle) {
+        router.push(`/customer/vehicle?redirect=/customer/instructor/${instructorId}`)
+        return
+      }
 
       const { data: instructor } = await supabase
         .from('instructors')
