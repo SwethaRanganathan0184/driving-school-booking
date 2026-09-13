@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import LogoMark from '../../components/LogoMark'
 
-export default function VehicleDetailsPage() {
+function VehicleDetailsForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/customer'
@@ -176,5 +176,13 @@ export default function VehicleDetailsPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function VehicleDetailsPage() {
+  return (
+    <Suspense fallback={<p className="text-center mt-16 text-[#47526B]">Loading...</p>}>
+      <VehicleDetailsForm />
+    </Suspense>
   )
 }
