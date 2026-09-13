@@ -193,17 +193,19 @@ export default function BookInstructorPage() {
       setBookingKey(null)
       return
     }
-
-    const { error: bookingError } = await supabase.from('bookings').insert({
+        const { error: bookingError } = await supabase.from('bookings').insert({
       package_id: packageId,
       instructor_id: instructorId,
       slot_start: slot.start.toISOString(),
       slot_end: slot.end.toISOString(),
     })
 
-    setBookingKey(null)
-
     if (bookingError) {
+      // Roll back a freshly-created single-class package so it doesn't linger as an orphan
+      if (packageType === 'single') {
+        await supabase.from('packages').delete().eq('id', packageId)
+      }
+      setBookingKey(null)
       setError(
         bookingError.message.includes('duplicate')
           ? 'That slot was just booked by someone else. Please pick another.'
