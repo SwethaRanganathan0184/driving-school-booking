@@ -3,6 +3,8 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { homeFor } from '@/lib/useAuthGate'
+import { PageLoading } from '../../components/ui/Page'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -16,14 +18,12 @@ export default function AuthCallbackPage() {
         return
       }
 
-      const userId = data.session.user.id
-
-      // Same role lookup as the login page — Google users get a profile row
-      // auto-created by the same trigger, defaulting to 'customer'.
+      // Same role lookup as the login page. Google users get a profile row
+      // auto-created by the signup trigger, defaulting to 'customer'.
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', userId)
+        .eq('id', data.session.user.id)
         .single()
 
       if (profileError || !profile) {
@@ -31,21 +31,11 @@ export default function AuthCallbackPage() {
         return
       }
 
-      if (profile.role === 'admin') {
-        router.push('/admin')
-      } else if (profile.role === 'instructor') {
-        router.push('/instructor')
-      } else {
-        router.push('/customer')
-      }
+      router.push(homeFor(profile.role))
     }
 
     handleRedirect()
   }, [router])
 
-  return (
-    <div style={{ textAlign: 'center', marginTop: '4rem' }}>
-      <p>Signing you in...</p>
-    </div>
-  )
+  return <PageLoading label="Signing you in" />
 }

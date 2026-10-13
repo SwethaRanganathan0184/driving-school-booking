@@ -1,42 +1,31 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
+import { useMotionProfile } from '@/lib/motion'
 
+/** Fades and slides children in when they scroll into view. Distance and speed follow the Studio motion settings. */
 export default function Reveal({
   children,
   className = '',
+  delay = 0,
 }: {
   children: React.ReactNode
   className?: string
+  delay?: number
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const m = useMotionProfile()
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  if (!m.scroll) return <div className={className}>{children}</div>
 
   return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-      } ${className}`}
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: m.revealDistance }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: m.duration(0.7), delay: m.duration(delay), ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }

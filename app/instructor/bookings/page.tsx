@@ -1,8 +1,17 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { motion } from 'motion/react'
+import { AlertCircle, CalendarClock, CheckCircle2, History, IndianRupee, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { useInstructor } from '@/lib/useInstructor'
+import { formatSlot } from '@/lib/instructors'
+import { useMotionProfile } from '@/lib/motion'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
+import { Alert, Badge } from '../../components/ui/Feedback'
+import { EmptyState, Page, PageLoading, PageMessage } from '../../components/ui/Page'
+import { Tabs } from '../../components/ui/Tabs'
 
 type Package = {
   id: string
@@ -29,100 +38,93 @@ type Booking = {
   package_id: string
 }
 
+type Customer = { name: string; phone: string | null }
+type Tab = 'action' | 'upcoming' | 'history'
+
+type Appointments = {
+  bookings: Booking[]
+  packages: Record<string, Package>
+  payments: Record<string, Payment>
+  customers: Record<string, Customer>
+}
+
+async function fetchAppointments(instructorId: string): Promise<Appointments> {
+  const { data: bookingRows } = await supabase
+    .from('bookings')
+    .select('id, slot_start, slot_end, status, package_id')
+    .eq('instructor_id', instructorId)
+    .order('slot_start', { ascending: false })
+
+  const bookings = (bookingRows ?? []) as Booking[]
+  const result: Appointments = { bookings, packages: {}, payments: {}, customers: {} }
+  const packageIds = [...new Set(bookings.map((b) => b.package_id))]
+  if (packageIds.length === 0) return result
+
+  const { data: packageRows } = await supabase
+    .from('packages')
+    .select('id, package_type, classes_total, classes_completed, price_per_class, status, customer_id')
+    .in('id', packageIds)
+  ;(packageRows ?? []).forEach((p) => {
+    result.packages[p.id] = p as Package
+  })
+
+  const { data: paymentRows } = await supabase
+    .from('payments')
+    .select('id, package_id, amount, status')
+    .in('package_id', packageIds)
+  ;(paymentRows ?? []).forEach((p) => {
+    result.payments[p.package_id] = p as Payment
+  })
+
+  const customerIds = [...new Set((packageRows ?? []).map((p) => p.customer_id))]
+  if (customerIds.length > 0) {
+    const { data: profileRows } = await supabase
+      .from('profiles')
+      .select('id, full_name, phone_number')
+      .in('id', customerIds)
+    ;(profileRows ?? []).forEach((p) => {
+      result.customers[p.id] = { name: p.full_name ?? 'Customer', phone: p.phone_number ?? null }
+    })
+  }
+  return result
+}
+
 export default function InstructorBookingsPage() {
-  const router = useRouter()
-  const [instructorId, setInstructorId] = useState<string | null>(null)
+  const inst = useInstructor()
+  const m = useMotionProfile()
+  const instructorId = inst.status === 'ready' ? inst.instructorId : null
   const [bookings, setBookings] = useState<Booking[]>([])
   const [packages, setPackages] = useState<Record<string, Package>>({})
   const [payments, setPayments] = useState<Record<string, Payment>>({})
-  const [customerNames, setCustomerNames] = useState<Record<string, string>>({})
+  const [customers, setCustomers] = useState<Record<string, Customer>>({})
   const [loading, setLoading] = useState(true)
   const [actionKey, setActionKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('action')
 
-  const loadBookings = useCallback(async (id: string) => {
-    const { data: bookingRows } = await supabase
-      .from('bookings')
-      .select('id, slot_start, slot_end, status, package_id')
-      .eq('instructor_id', id)
-      .order('slot_start', { ascending: false })
+  const [now] = useState(() => Date.now())
 
-    const bookingsList = (bookingRows ?? []) as Booking[]
-    setBookings(bookingsList)
-
-    const packageIds = [...new Set(bookingsList.map((b) => b.package_id))]
-    if (packageIds.length === 0) {
-      setPackages({})
-      setPayments({})
-      setCustomerNames({})
-      return
-    }
-
-    const { data: packageRows } = await supabase
-      .from('packages')
-      .select('id, package_type, classes_total, classes_completed, price_per_class, status, customer_id')
-      .in('id', packageIds)
-
-    const packageMap: Record<string, Package> = {}
-    ;(packageRows ?? []).forEach((p) => {
-      packageMap[p.id] = p as Package
-    })
-    setPackages(packageMap)
-
-    const { data: paymentRows } = await supabase
-      .from('payments')
-      .select('id, package_id, amount, status')
-      .in('package_id', packageIds)
-
-    const paymentMap: Record<string, Payment> = {}
-    ;(paymentRows ?? []).forEach((p) => {
-      paymentMap[p.package_id] = p as Payment
-    })
-    setPayments(paymentMap)
-
-    const customerIds = [...new Set((packageRows ?? []).map((p) => p.customer_id))]
-    if (customerIds.length > 0) {
-      const { data: profileRows } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', customerIds)
-
-      const nameMap: Record<string, string> = {}
-      ;(profileRows ?? []).forEach((p) => {
-        nameMap[p.id] = p.full_name ?? 'Customer'
-      })
-      setCustomerNames(nameMap)
-    }
+  const apply = useCallback((d: Appointments) => {
+    setBookings(d.bookings)
+    setPackages(d.packages)
+    setPayments(d.payments)
+    setCustomers(d.customers)
   }, [])
+
+  const loadBookings = async (id: string) => apply(await fetchAppointments(id))
 
   useEffect(() => {
-    const init = async () => {
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (!sessionData.session) {
-        router.push('/login')
-        return
-      }
-
-      const { data: instructor, error: instructorError } = await supabase
-        .from('instructors')
-        .select('id')
-        .eq('profile_id', sessionData.session.user.id)
-        .single()
-
-      if (instructorError || !instructor) {
-        setError('This account is not set up as an instructor yet.')
-        setLoading(false)
-        return
-      }
-
-      setInstructorId(instructor.id)
-      await loadBookings(instructor.id)
+    if (!instructorId) return
+    let active = true
+    fetchAppointments(instructorId).then((d) => {
+      if (!active) return
+      apply(d)
       setLoading(false)
+    })
+    return () => {
+      active = false
     }
-
-    init()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [instructorId, apply])
 
   const handleMarkComplete = async (booking: Booking) => {
     if (!instructorId) return
@@ -190,86 +192,102 @@ export default function InstructorBookingsPage() {
     await loadBookings(instructorId)
   }
 
-  if (loading) return <p className="text-center mt-16 text-[#47526B]">Loading...</p>
+  if (inst.status === 'denied') return <PageMessage title="Instructor area">{inst.message}</PageMessage>
+  if (inst.status !== 'ready' || loading) return <PageLoading />
 
-  if (error && !instructorId) {
-    return <p className="text-center mt-16 text-[#B3261E]">{error}</p>
+  const isPast = (b: Booking) => new Date(b.slot_start).getTime() <= now
+  const pendingPayment = (b: Booking) => {
+    const p = payments[b.package_id]
+    return p && p.status === 'pending' ? p : undefined
   }
+  const needsAction = bookings.filter((b) => (b.status === 'confirmed' && isPast(b)) || (b.status === 'completed' && pendingPayment(b)))
+  // De-duplicate: a 10-class package's single pending payment should show once.
+  const seenPayments = new Set<string>()
+  const actionList = needsAction.filter((b) => {
+    if (b.status === 'confirmed') return true
+    const p = pendingPayment(b)!
+    if (seenPayments.has(p.id)) return false
+    seenPayments.add(p.id)
+    return true
+  })
+  const upcoming = bookings.filter((b) => b.status === 'confirmed' && !isPast(b)).reverse()
+  const history = bookings.filter((b) => b.status !== 'confirmed')
+
+  const list = tab === 'action' ? actionList : tab === 'upcoming' ? upcoming : history
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#F7F8FA] px-4 py-12">
-      <div className="max-w-xl mx-auto">
-        <h1 className="text-2xl font-[family-name:var(--font-manrope)] font-semibold text-[#16213E] mb-8">
-          Your bookings
-        </h1>
+    <Page title="Appointments" subtitle="Mark lessons complete after they happen and record payments." width="md">
+      <Tabs<Tab>
+        value={tab}
+        onChange={setTab}
+        items={[
+          { id: 'action', label: 'Needs action', icon: AlertCircle, count: actionList.length },
+          { id: 'upcoming', label: 'Upcoming', icon: CalendarClock, count: upcoming.length },
+          { id: 'history', label: 'History', icon: History, count: history.length },
+        ]}
+      />
+      <Alert>{error}</Alert>
 
-        {error && <p className="text-sm text-[#B3261E] mb-4">{error}</p>}
-        {bookings.length === 0 && <p className="text-base text-[#47526B]">No bookings yet.</p>}
-
+      {list.length === 0 ? (
+        <EmptyState
+          icon={tab === 'action' ? CheckCircle2 : CalendarClock}
+          title={tab === 'action' ? "You're all caught up" : tab === 'upcoming' ? 'No upcoming lessons' : 'No history yet'}
+        />
+      ) : (
         <ul className="space-y-3">
-          {bookings.map((booking) => {
+          {list.map((booking, i) => {
             const pkg = packages[booking.package_id]
             const payment = pkg ? payments[pkg.id] : undefined
-            const slotStart = new Date(booking.slot_start)
-            const isPast = slotStart <= new Date()
-            const canComplete = booking.status === 'confirmed' && isPast
+            const customer = customers[pkg?.customer_id ?? '']
+            const canComplete = booking.status === 'confirmed' && isPast(booking)
 
             return (
-              <li key={booking.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-[#16213E] font-[family-name:var(--font-manrope)]">
-                    {customerNames[pkg?.customer_id ?? ''] ?? 'Customer'}
-                  </span>
-                  <span className="text-sm text-[#47526B]">
-                    {slotStart.toLocaleDateString()}{' '}
-                    {slotStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-base text-[#47526B] mt-1">
-                  Status: {booking.status}
-                  {pkg && pkg.package_type === 'ten_pack' && (
-                    <> — {pkg.classes_completed}/{pkg.classes_total} classes completed</>
+              <motion.li
+                key={booking.id}
+                initial={m.enabled ? { opacity: 0, y: 12 } : false}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: m.duration(Math.min(i, 8) * 0.05), duration: m.duration(0.35) }}
+              >
+                <Card>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-display font-bold text-fg">{customer?.name ?? 'Customer'}</p>
+                      <p className="text-sm text-muted">{formatSlot(booking.slot_start)}</p>
+                      {customer?.phone && (
+                        <a href={`tel:${customer.phone}`} className="text-sm text-accent inline-flex items-center gap-1 mt-1 hover:underline">
+                          <Phone className="size-3.5" aria-hidden />{customer.phone}
+                        </a>
+                      )}
+                    </div>
+                    <Badge status={booking.status} />
+                  </div>
+                  {pkg?.package_type === 'ten_pack' && (
+                    <p className="text-xs text-muted mt-2">10-class package · {pkg.classes_completed}/{pkg.classes_total} completed</p>
                   )}
-                </p>
 
-                {canComplete && (
-                  <button
-                    type="button"
-                    disabled={actionKey === booking.id}
-                    onClick={() => handleMarkComplete(booking)}
-                    className="mt-3 text-sm rounded-md bg-[#16213E] text-white px-3 py-1.5 hover:bg-[#0F1729] transition-colors disabled:opacity-60"
-                  >
-                    {actionKey === booking.id ? 'Saving...' : 'Mark completed'}
-                  </button>
-                )}
-                {booking.status === 'confirmed' && !isPast && (
-                  <p className="text-xs text-[#47526B] mt-2">
-                    Can be marked completed after the class time passes.
-                  </p>
-                )}
-
-                {payment && (
-                  <div className="mt-3 flex items-center gap-3 text-sm">
-                    <span className={payment.status === 'pending' ? 'text-[#B3261E]' : 'text-green-700'}>
-                      ₹{payment.amount} — {payment.status}
-                    </span>
-                    {payment.status === 'pending' && (
-                      <button
-                        type="button"
-                        disabled={actionKey === payment.id}
-                        onClick={() => handleMarkPaid(payment)}
-                        className="rounded-md border border-[#16213E] text-[#16213E] px-3 py-1 hover:bg-[#16213E] hover:text-white transition-colors disabled:opacity-60"
-                      >
-                        {actionKey === payment.id ? 'Saving...' : 'Mark as paid'}
-                      </button>
+                  <div className="flex flex-wrap items-center gap-3 mt-4">
+                    {canComplete && (
+                      <Button size="sm" icon={CheckCircle2} loading={actionKey === booking.id} onClick={() => handleMarkComplete(booking)}>
+                        Mark completed
+                      </Button>
+                    )}
+                    {payment && (
+                      <span className={`text-sm inline-flex items-center gap-1 ${payment.status === 'pending' ? 'text-danger' : 'text-success'}`}>
+                        <IndianRupee className="size-3.5" aria-hidden />{payment.amount} · {payment.status}
+                      </span>
+                    )}
+                    {payment?.status === 'pending' && (
+                      <Button size="sm" variant="secondary" loading={actionKey === payment.id} onClick={() => handleMarkPaid(payment)}>
+                        Mark as paid
+                      </Button>
                     )}
                   </div>
-                )}
-              </li>
+                </Card>
+              </motion.li>
             )
           })}
         </ul>
-      </div>
-    </div>
+      )}
+    </Page>
   )
 }

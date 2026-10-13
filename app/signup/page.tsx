@@ -3,8 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { MailCheck, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
-import LogoMark from '../components/LogoMark'
+import AuthCard, { Divider, GoogleButton } from '../components/AuthCard'
+import Button from '../components/ui/Button'
+import { Field, Input } from '../components/ui/Field'
+import { Alert } from '../components/ui/Feedback'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -15,16 +19,18 @@ export default function SignupPage() {
   const [gender, setGender] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const { error: signupError } = await supabase.auth.signUp({
+    const { data, error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
           phone_number: phoneNumber,
@@ -40,7 +46,12 @@ export default function SignupPage() {
       return
     }
 
-    router.push('/login')
+    // With email confirmation disabled Supabase signs the user straight in.
+    if (data.session) {
+      router.push('/customer')
+      return
+    }
+    setDone(true)
   }
 
   const handleGoogleLogin = async () => {
@@ -53,129 +64,64 @@ export default function SignupPage() {
     })
   }
 
+  if (done) {
+    return (
+      <AuthCard title="Check your inbox" subtitle={`We sent a confirmation link to ${email}.`}>
+        <div className="text-center">
+          <MailCheck className="size-12 text-accent mx-auto mb-4" aria-hidden />
+          <p className="text-muted text-sm mb-6">Confirm your email, then sign in to book your first lesson.</p>
+          <Button href="/login" className="w-full">
+            Go to sign in
+          </Button>
+        </div>
+      </AuthCard>
+    )
+  }
+
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-[#F7F8FA] px-4 py-10">
-      <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-sm p-8">
-        <div className="flex justify-center mb-5">
-          <LogoMark className="w-10 h-10 text-[#16213E]" />
+    <AuthCard title="Create your account" subtitle="Book lessons in minutes. Pay only after each class.">
+      <GoogleButton onClick={handleGoogleLogin} label="Sign up with Google" />
+      <Divider />
+      <form onSubmit={handleSignup} className="space-y-4">
+        <Input label="Full name" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+        <Input label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Input label="Phone number" type="tel" autoComplete="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
+          <Field label="Gender">
+            {(p) => (
+              <select {...p} value={gender} onChange={(e) => setGender(e.target.value)} required>
+                <option value="" disabled>
+                  Select…
+                </option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="transgender">Transgender</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            )}
+          </Field>
         </div>
-        <h1 className="text-2xl font-[family-name:var(--font-manrope)] font-semibold text-[#16213E] text-center">
-          Create your account
-        </h1>
-        <p className="text-sm text-[#47526B] text-center mt-1 mb-8">
-          Start booking lessons in a couple of minutes.
-        </p>
-
-        <form onSubmit={handleSignup} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-[#16213E] mb-1">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[#16213E] focus:outline-none focus:ring-2 focus:ring-[#B8912F] focus:border-[#16213E]"
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-[#16213E] mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[#16213E] focus:outline-none focus:ring-2 focus:ring-[#B8912F] focus:border-[#16213E]"
-            />
-          </div>
-          <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-[#16213E] mb-1">
-              Phone number
-            </label>
-            <input
-              id="phoneNumber"
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[#16213E] focus:outline-none focus:ring-2 focus:ring-[#B8912F] focus:border-[#16213E]"
-            />
-          </div>
-          <div>
-            <label htmlFor="gender" className="block text-sm font-medium text-[#16213E] mb-1">
-              Gender
-            </label>
-            <select
-              id="gender"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[#16213E] focus:outline-none focus:ring-2 focus:ring-[#B8912F] focus:border-[#16213E] bg-white"
-            >
-              <option value="" disabled>
-                Select...
-              </option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="transgender">Transgender</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#16213E] mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-[#16213E] focus:outline-none focus:ring-2 focus:ring-[#B8912F] focus:border-[#16213E]"
-            />
-          </div>
-
-          {error && <p className="text-sm text-[#B3261E]">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-[#B8912F] text-[#16213E] font-medium py-2.5 hover:bg-[#A57F27] transition-colors disabled:opacity-60"
-          >
-            {loading ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
-
-        <div className="flex items-center gap-3 my-6">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400 uppercase tracking-wide">or</span>
-          <div className="h-px flex-1 bg-gray-200" />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 rounded-md border border-gray-300 py-2.5 text-[#16213E] font-medium hover:bg-gray-50 transition-colors"
-        >
-          Continue with Google
-        </button>
-        <p className="text-xs text-[#47526B] text-center mt-2">
-          With Google, you can add your phone number and gender afterward from your profile.
-        </p>
-
-        <p className="mt-6 text-center text-sm text-[#47526B]">
-          Already have an account?{' '}
-          <Link href="/login" className="text-[#16213E] font-medium hover:underline">
-            Log in
-          </Link>
-        </p>
-      </div>
-    </div>
+        <Input
+          label="Password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          hint="At least 8 characters."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <Alert>{error}</Alert>
+        <Button type="submit" size="lg" loading={loading} icon={UserPlus} className="w-full">
+          {loading ? 'Creating account' : 'Create account'}
+        </Button>
+      </form>
+      <p className="text-sm text-muted text-center mt-6">
+        Already have an account?{' '}
+        <Link href="/login" className="text-accent font-medium hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </AuthCard>
   )
 }
