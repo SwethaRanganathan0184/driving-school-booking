@@ -13,10 +13,18 @@ export async function publishSettings(
   try {
     const { client, user } = await requireAdmin(accessToken)
     const clean = mergeSettings(settings)
-    const { error } = await client
+    // A plain update, not an upsert: the migration seeds row 1 and only grants admins UPDATE.
+    // Postgres checks INSERT policies on every upsert, so an upsert is always rejected by RLS.
+    const { data, error } = await client
       .from('site_settings')
-      .upsert({ id: 1, settings: clean, updated_at: new Date().toISOString(), updated_by: user.id })
+      .update({ settings: clean, updated_at: new Date().toISOString(), updated_by: user.id })
+      .eq('id', 1)
+      .select('id')
     if (error) return { ok: false, error: error.message }
+    // RLS filters rows silently, so a blocked or missing row shows up as zero rows, not an error.
+    if (!data?.length) {
+      return { ok: false, error: 'Settings row not found or not writable. Re-run the Supabase migration and check your admin role.' }
+    }
 
     updateTag(SITE_SETTINGS_TAG)
     return { ok: true, settings: clean }

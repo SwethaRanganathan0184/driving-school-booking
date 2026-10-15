@@ -20,7 +20,7 @@ export default function Footer() {
           <p className="text-sm text-muted mt-3 max-w-xs">{settings.tagline}</p>
         </div>
         <div>
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-3">Explore</h2>
+          <h2 className="text-sm font-medium text-fg mb-3">Explore</h2>
           <ul className="space-y-2 text-sm">
             <li><Link href="/customer" className="text-fg/80 hover:text-accent transition-colors">Find an instructor</Link></li>
             <li><Link href="/signup" className="text-fg/80 hover:text-accent transition-colors">Create an account</Link></li>
@@ -29,7 +29,7 @@ export default function Footer() {
         </div>
         {(address || phone || email) && (
           <div>
-            <h2 className="text-xs uppercase tracking-widest text-muted mb-3">Contact</h2>
+            <h2 className="text-sm font-medium text-fg mb-3">Contact</h2>
             <ul className="space-y-2 text-sm text-fg/80">
               {address && <li className="flex gap-2"><MapPin className="size-4 mt-0.5 text-accent shrink-0" aria-hidden />{address}</li>}
               {phone && <li className="flex gap-2"><Phone className="size-4 mt-0.5 text-accent shrink-0" aria-hidden /><a href={`tel:${phone}`} className="hover:text-accent">{phone}</a></li>}

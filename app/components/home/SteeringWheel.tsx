@@ -12,15 +12,14 @@ export default function SteeringWheel({ className = '' }: { className?: string }
 
   return (
     <div className={`relative ${className}`}>
-      <div className="absolute inset-[12%] rounded-full bg-accent/25 blur-3xl" aria-hidden />
       <motion.div
-        initial={m.enabled ? { rotate: -120, scale: 0.85, opacity: 0 } : false}
-        animate={{ rotate: 0, scale: 1, opacity: 1 }}
-        transition={{ duration: m.duration(1.2), ease: [0.22, 1, 0.36, 1] }}
+        initial={m.enabled ? { rotate: -40, opacity: 0 } : false}
+        animate={{ rotate: 0, opacity: 1 }}
+        transition={{ duration: m.duration(0.9), ease: [0.22, 1, 0.36, 1] }}
       >
         <motion.svg
           viewBox="0 0 200 200"
-          className="w-full h-full drop-shadow-[0_20px_40px_rgba(0,0,0,0.35)]"
+          className="w-full h-full"
           style={m.scroll ? { rotate } : undefined}
           aria-hidden
         >

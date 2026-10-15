@@ -12,8 +12,7 @@ export default function Background() {
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden>
       {style === 'glow' && (
         <>
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_22%,transparent),transparent)] blur-2xl dw-drift" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[500px] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_10%,transparent),transparent)] blur-2xl" />
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--accent)_10%,transparent),transparent)] blur-2xl" />
         </>
       )}
       {style === 'grid' && (

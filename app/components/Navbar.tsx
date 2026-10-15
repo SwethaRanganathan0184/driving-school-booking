@@ -22,7 +22,6 @@ import {
 import { supabase } from '@/lib/supabaseClient'
 import { useMotionProfile } from '@/lib/motion'
 import Logo from './Logo'
-import ScrollRoad from './ScrollRoad'
 import { useSiteTheme } from './ThemeProvider'
 import Button from './ui/Button'
 
@@ -172,8 +171,6 @@ export default function Navbar() {
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
-
-        <ScrollRoad />
       </nav>
 
       <AnimatePresence>

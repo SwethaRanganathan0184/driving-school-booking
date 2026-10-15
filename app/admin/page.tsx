@@ -27,7 +27,6 @@ function AdminDashboard() {
 
   // Keep the tab in the URL so refreshes and shared links land in the same place.
   const setTab = (t: Tab) => router.replace(t === 'overview' ? pathname : `${pathname}?tab=${t}`, { scroll: false })
-  const token = gate.session.access_token
 
   return (
     <Page title="Admin" subtitle="Run the school: bookings, instructors, feedback and the site's look." width="xl">
@@ -42,9 +41,9 @@ function AdminDashboard() {
         ]}
       />
       {tab === 'overview' && <OverviewPanel />}
-      {tab === 'instructors' && <InstructorsPanel accessToken={token} />}
+      {tab === 'instructors' && <InstructorsPanel />}
       {tab === 'feedback' && <FeedbackPanel />}
-      {tab === 'studio' && <StudioPanel accessToken={token} />}
+      {tab === 'studio' && <StudioPanel />}
     </Page>
   )
 }

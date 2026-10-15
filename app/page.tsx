@@ -9,7 +9,7 @@ export default function HomePage() {
 
       <section className="px-4 sm:px-6 py-20" aria-labelledby="how-it-works">
         <div className="max-w-6xl mx-auto">
-          <SectionHeading eyebrow="How it works" title="Your road to a licence" />
+          <SectionHeading id="how-it-works" title="How it works" />
           <Journey />
         </div>
       </section>

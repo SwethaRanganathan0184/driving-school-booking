@@ -53,7 +53,7 @@ export default function InstructorFeedbackPage() {
         <>
           <Card className="mb-6 grid sm:grid-cols-[auto_1fr] gap-6 items-center">
             <div className="text-center sm:pr-6 sm:border-r border-border">
-              <p className="font-display text-5xl font-extrabold text-fg">{avg.toFixed(1)}</p>
+              <p className="font-display text-4xl font-bold text-fg tabular-nums">{avg.toFixed(1)}</p>
               <Stars value={avg} size="md" />
               <p className="text-sm text-muted mt-1">{total} review{total === 1 ? '' : 's'}</p>
             </div>

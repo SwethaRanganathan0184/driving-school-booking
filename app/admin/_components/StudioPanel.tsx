@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'motion/react'
 import { Brush, Check, ImageUp, Palette, RotateCcw, Rocket, Sparkles, Store, Undo2, Wand2 } from 'lucide-react'
-import { supabase } from '@/lib/supabaseClient'
+import { getAccessToken, supabase } from '@/lib/supabaseClient'
 import { DEFAULT_SETTINGS, PRESETS, type PresetId, type SiteSettings } from '@/lib/theme'
 import { useMotionProfile } from '@/lib/motion'
 import { publishSettings } from '../../actions/settings'
@@ -74,7 +74,7 @@ function MotionPreview({ replayKey }: { replayKey: number }) {
   )
 }
 
-export default function StudioPanel({ accessToken }: { accessToken: string }) {
+export default function StudioPanel() {
   const router = useRouter()
   const m = useMotionProfile()
   const { settings: shown, setPreview } = useSiteTheme()
@@ -115,7 +115,7 @@ export default function StudioPanel({ accessToken }: { accessToken: string }) {
   const handlePublish = async () => {
     setSaving(true)
     setError(null)
-    const result = await publishSettings(accessToken, draft)
+    const result = await publishSettings(await getAccessToken(), draft)
     setSaving(false)
     if (!result.ok) {
       setError(result.error)
@@ -210,7 +210,7 @@ export default function StudioPanel({ accessToken }: { accessToken: string }) {
           <Segmented label="Corners" value={draft.radius} onChange={(radius) => update({ radius })}
             options={[{ value: 'sharp', label: 'Sharp' }, { value: 'soft', label: 'Soft' }, { value: 'round', label: 'Round' }]} />
           <Segmented label="Background" value={draft.background} onChange={(background) => update({ background })}
-            options={[{ value: 'glow', label: 'Glow' }, { value: 'grid', label: 'Grid' }, { value: 'road', label: 'Road lines' }, { value: 'none', label: 'None' }]} />
+            options={[{ value: 'none', label: 'None' }, { value: 'glow', label: 'Glow' }, { value: 'grid', label: 'Grid' }, { value: 'road', label: 'Road lines' }]} />
         </Section>
 
         <Section icon={Sparkles} title="Motion & animation" hint="Visitors who prefer reduced motion always get a calm, static site.">
@@ -226,7 +226,7 @@ export default function StudioPanel({ accessToken }: { accessToken: string }) {
             <div className="flex justify-between text-xs text-muted mt-1"><span>Relaxed</span><span>Snappy</span></div>
           </div>
           <div className="space-y-4">
-            <Toggle label="Scroll animations" hint="Steering wheel, road car, journey and reveal-on-scroll" checked={draft.motion.scrollEffects} onChange={(scrollEffects) => updateMotion({ scrollEffects })} />
+            <Toggle label="Scroll animations" hint="Steering wheel, journey and reveal-on-scroll" checked={draft.motion.scrollEffects} onChange={(scrollEffects) => updateMotion({ scrollEffects })} />
             <Toggle label="Hover & press effects" hint="Buttons and cards lift and spring" checked={draft.motion.hoverEffects} onChange={(hoverEffects) => updateMotion({ hoverEffects })} />
             <Toggle label="Page transitions" hint="Pages fade in when navigating" checked={draft.motion.pageTransitions} onChange={(pageTransitions) => updateMotion({ pageTransitions })} />
           </div>
@@ -236,7 +236,7 @@ export default function StudioPanel({ accessToken }: { accessToken: string }) {
 
         <Section icon={Wand2} title="Branding">
           <Input label="Site name" maxLength={40} value={draft.siteName} onChange={(e) => update({ siteName: e.target.value })} />
-          <Input label="Tagline" maxLength={120} hint="Shown as the home page headline. Words 'wheel' and 'road' are highlighted." value={draft.tagline} onChange={(e) => update({ tagline: e.target.value })} />
+          <Input label="Tagline" maxLength={120} hint="Shown as the home page headline." value={draft.tagline} onChange={(e) => update({ tagline: e.target.value })} />
           <div className="grid sm:grid-cols-2 gap-4">
             {(['logo', 'favicon'] as const).map((kind) => {
               const url = kind === 'logo' ? draft.logoUrl : draft.faviconUrl
@@ -296,7 +296,7 @@ export default function StudioPanel({ accessToken }: { accessToken: string }) {
                 {error ? (
                   <Alert>{error}</Alert>
                 ) : dirty ? (
-                  <span className="text-fg"><span className="inline-block size-2 rounded-full bg-accent mr-2 animate-pulse" />Previewing unpublished changes. Only you can see them.</span>
+                  <span className="text-fg"><span className="inline-block size-2 rounded-full bg-accent mr-2" />Previewing unpublished changes. Only you can see them.</span>
                 ) : (
                   <span className="text-success flex items-center gap-2"><Check className="size-4" />Published. Everyone now sees this look.</span>
                 )}

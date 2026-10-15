@@ -14,3 +14,12 @@ export const supabase = createClient(
   SUPABASE_URL || 'https://missing-env.supabase.co',
   SUPABASE_ANON_KEY || 'missing-anon-key'
 )
+
+/**
+ * The signed-in user's current access token, for calling server actions. Read it at call time:
+ * tokens expire after an hour, and getSession() refreshes them, so a token saved at page load goes stale.
+ */
+export async function getAccessToken() {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? ''
+}

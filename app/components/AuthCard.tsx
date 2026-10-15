@@ -9,21 +9,14 @@ export default function AuthCard({ title, subtitle, children }: { title: string;
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-12">
       <motion.div
-        initial={m.enabled ? { opacity: 0, y: 20, scale: 0.98 } : false}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: m.duration(0.5), ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md bg-surface/90 backdrop-blur border border-border rounded-[calc(var(--radius)*1.25)] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.5)] p-7 sm:p-9"
+        initial={m.enabled ? { opacity: 0, y: 8 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: m.duration(0.35), ease: 'easeOut' }}
+        className="w-full max-w-sm bg-surface border border-border rounded-[var(--radius)] p-7 sm:p-8"
       >
-        <motion.div
-          className="flex justify-center mb-5"
-          initial={m.enabled ? { rotate: -90, opacity: 0 } : false}
-          animate={{ rotate: 0, opacity: 1 }}
-          transition={{ duration: m.duration(0.9), ease: [0.22, 1, 0.36, 1] }}
-        >
-          <LogoMark className="size-11 text-accent" />
-        </motion.div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-fg text-center">{title}</h1>
-        {subtitle && <p className="text-sm text-muted text-center mt-1.5">{subtitle}</p>}
+        <LogoMark className="size-8 text-accent mb-6" />
+        <h1 className="font-display text-2xl font-bold tracking-tight text-fg">{title}</h1>
+        {subtitle && <p className="text-sm text-muted mt-1.5">{subtitle}</p>}
         <div className="mt-8">{children}</div>
       </motion.div>
     </main>
@@ -50,7 +43,7 @@ export function GoogleButton({ onClick, label = 'Continue with Google' }: { onCl
 
 export function Divider({ label = 'or' }: { label?: string }) {
   return (
-    <div className="flex items-center gap-3 my-6 text-xs uppercase tracking-widest text-muted">
+    <div className="flex items-center gap-3 my-6 text-xs text-muted">
       <span className="h-px flex-1 bg-border" />
       {label}
       <span className="h-px flex-1 bg-border" />

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { ArrowUpCircle, Camera, Check, Copy, Pencil, Power, RefreshCw, UserPlus, Users } from 'lucide-react'
-import { supabase } from '@/lib/supabaseClient'
+import { getAccessToken, supabase } from '@/lib/supabaseClient'
 import { fetchInstructors, splitList, type InstructorCard } from '@/lib/instructors'
 import { useMotionProfile } from '@/lib/motion'
 import { createInstructor } from '../../actions/instructors'
@@ -60,7 +60,7 @@ function DetailsFields({ value, onChange }: { value: Details; onChange: (d: Deta
   )
 }
 
-export default function InstructorsPanel({ accessToken }: { accessToken: string }) {
+export default function InstructorsPanel() {
   const m = useMotionProfile()
   const [instructors, setInstructors] = useState<InstructorCard[] | null>(null)
   const [customers, setCustomers] = useState<{ id: string; full_name: string | null }[]>([])
@@ -112,7 +112,7 @@ export default function InstructorsPanel({ accessToken }: { accessToken: string 
     setBusy(true)
     setError(null)
     const p = toPayload(form)
-    const result = await createInstructor(accessToken, {
+    const result = await createInstructor(await getAccessToken(), {
       fullName: form.fullName,
       email,
       tempPassword: password,

@@ -247,7 +247,7 @@ export default function BookInstructorPage() {
       <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="space-y-6 min-w-0">
           <section aria-labelledby="pkg">
-            <h2 id="pkg" className="text-xs uppercase tracking-widest text-muted mb-3">1 · Package</h2>
+            <h2 id="pkg" className="text-sm font-semibold text-fg mb-3">1. Package</h2>
             <div className="grid grid-cols-2 gap-3">
               {([
                 { id: 'single', title: 'Single class', price: PRICE_PER_CLASS, note: 'pay after class', icon: Sparkles },
@@ -277,7 +277,7 @@ export default function BookInstructorPage() {
           <Alert>{error}</Alert>
 
           <section aria-labelledby="date">
-            <h2 id="date" className="text-xs uppercase tracking-widest text-muted mb-3">2 · Date</h2>
+            <h2 id="date" className="text-sm font-semibold text-fg mb-3">2. Date</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
               {days.map((day) => {
                 const isSelected = selectedDateKey === day.key
@@ -311,7 +311,7 @@ export default function BookInstructorPage() {
           </section>
 
           <section aria-labelledby="time">
-            <h2 id="time" className="text-xs uppercase tracking-widest text-muted mb-3">3 · Time</h2>
+            <h2 id="time" className="text-sm font-semibold text-fg mb-3">3. Time</h2>
             {slotsForSelectedDay.length === 0 ? (
               <EmptyState icon={CalendarX} title="No open times">
                 {days.some((d) => d.hasSlots) ? 'Pick another day.' : 'This instructor has no open slots in the next two weeks.'}

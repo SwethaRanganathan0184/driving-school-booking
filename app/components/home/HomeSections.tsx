@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, BadgeIndianRupee, CalendarClock, ChevronLeft, ChevronRight, Gauge, MapPinned, Minus, Plus, Quote, ShieldCheck, Sparkles, UserCheck, Wallet } from 'lucide-react'
+import { ArrowRight, CalendarClock, ChevronLeft, ChevronRight, Gauge, MapPinned, Minus, Plus, ShieldCheck, UserCheck, Wallet } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useMotionProfile } from '@/lib/motion'
 import { useSiteTheme } from '../ThemeProvider'
@@ -15,41 +15,25 @@ import SteeringWheel from './SteeringWheel'
 export function Hero() {
   const { settings } = useSiteTheme()
   const m = useMotionProfile()
-  const words = settings.tagline.split(' ')
 
   return (
     <section className="relative px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 overflow-hidden">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
         <div>
-          <motion.span
-            initial={m.enabled ? { opacity: 0, y: 10 } : false}
+          <motion.h1
+            initial={m.enabled ? { opacity: 0, y: 12 } : false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: m.duration(0.5) }}
-            className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent"
+            transition={{ duration: m.duration(0.5), ease: 'easeOut' }}
+            className="font-display font-bold tracking-tight text-fg text-4xl sm:text-5xl leading-[1.1] text-balance"
           >
-            <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-            Now booking lessons
-          </motion.span>
-
-          <h1 className="font-display font-extrabold tracking-tight text-fg text-4xl sm:text-6xl leading-[1.05] mt-6">
-            {words.map((w, i) => (
-              <motion.span
-                key={`${w}-${i}`}
-                className={`inline-block mr-[0.25em] ${/wheel|road/i.test(w) ? 'text-accent' : ''}`}
-                initial={m.enabled ? { opacity: 0, y: 24, filter: 'blur(6px)' } : false}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: m.duration(0.6), delay: m.duration(0.1 + i * 0.06), ease: [0.22, 1, 0.36, 1] }}
-              >
-                {w}
-              </motion.span>
-            ))}
-          </h1>
+            {settings.tagline}
+          </motion.h1>
 
           <motion.p
             initial={m.enabled ? { opacity: 0, y: 12 } : false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: m.duration(0.6), delay: m.duration(0.45) }}
-            className="text-lg text-muted max-w-xl mt-6"
+            transition={{ duration: m.duration(0.5), delay: m.duration(0.1) }}
+            className="text-lg text-muted max-w-xl mt-5"
           >
             Book lessons with a real instructor in your own car. Pick a slot that works, learn at your own pace, and
             pay only after each class.
@@ -58,8 +42,8 @@ export function Hero() {
           <motion.div
             initial={m.enabled ? { opacity: 0, y: 12 } : false}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: m.duration(0.6), delay: m.duration(0.55) }}
-            className="flex flex-col sm:flex-row gap-3 mt-9"
+            transition={{ duration: m.duration(0.5), delay: m.duration(0.15) }}
+            className="flex flex-col sm:flex-row gap-3 mt-8"
           >
             <Button size="lg" href="/signup" icon={ArrowRight} iconRight>
               Get started
@@ -72,24 +56,24 @@ export function Hero() {
           <motion.dl
             initial={m.enabled ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
-            transition={{ duration: m.duration(0.8), delay: m.duration(0.75) }}
-            className="grid grid-cols-3 gap-4 mt-12 max-w-md"
+            transition={{ duration: m.duration(0.5), delay: m.duration(0.25) }}
+            className="grid grid-cols-3 gap-6 mt-12 pt-6 border-t border-border max-w-md"
           >
             {[
               ['1 hr', 'per lesson'],
               [`₹${settings.pricePerClass}`, 'per class'],
               ['₹0', 'paid upfront'],
             ].map(([value, label]) => (
-              <div key={label} className="border-l-2 border-accent/60 pl-3">
+              <div key={label}>
                 <dt className="sr-only">{label}</dt>
-                <dd className="font-display text-2xl font-bold text-fg">{value}</dd>
+                <dd className="font-display text-xl font-semibold text-fg tabular-nums">{value}</dd>
                 <dd className="text-xs text-muted">{label}</dd>
               </div>
             ))}
           </motion.dl>
         </div>
 
-        <SteeringWheel className="w-64 sm:w-80 lg:w-full max-w-md mx-auto aspect-square" />
+        <SteeringWheel className="hidden sm:block w-72 lg:w-full max-w-sm mx-auto aspect-square" />
       </div>
     </section>
   )
@@ -108,20 +92,18 @@ export function Features() {
   return (
     <section className="px-4 sm:px-6 py-20">
       <div className="max-w-6xl mx-auto">
-        <SectionHeading eyebrow="Why DriveWise" title="Built around how people actually learn" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map(({ icon: Icon, title, body }, i) => (
-            <Reveal key={title} delay={(i % 3) * 0.08}>
-              <Card interactive className="h-full">
-                <span className="grid place-items-center size-11 rounded-[var(--radius)] bg-accent/15 text-accent mb-4">
-                  <Icon className="size-5" aria-hidden />
-                </span>
-                <h3 className="font-display font-bold text-fg">{title}</h3>
-                <p className="text-muted mt-1.5">{body}</p>
-              </Card>
-            </Reveal>
+        <SectionHeading title="Built around how people actually learn" />
+        <Reveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
+          {FEATURES.map(({ icon: Icon, title, body }) => (
+            <div key={title}>
+              <h3 className="font-semibold text-fg flex items-center gap-2">
+                <Icon className="size-4 text-accent shrink-0" aria-hidden />
+                {title}
+              </h3>
+              <p className="text-muted mt-1.5 leading-relaxed">{body}</p>
+            </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -132,14 +114,14 @@ export function Pricing() {
   const price = settings.pricePerClass
   return (
     <section className="px-4 sm:px-6 py-20">
-      <div className="max-w-4xl mx-auto">
-        <SectionHeading eyebrow="Pricing" title="Simple, honest pricing" subtitle="One hour per class. You only pay for lessons you've taken." />
-        <div className="grid sm:grid-cols-2 gap-5">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading title="Pricing" subtitle="One hour per class. You only pay for lessons you've taken." />
+        <div className="grid sm:grid-cols-2 gap-5 max-w-4xl">
           <Reveal>
-            <Card interactive className="h-full p-7">
+            <Card className="h-full p-7">
               <h3 className="font-display font-bold text-fg text-lg">Single class</h3>
               <p className="text-muted mt-1">Try a lesson before committing.</p>
-              <p className="font-display text-5xl font-extrabold text-fg mt-6">₹{price.toLocaleString('en-IN')}</p>
+              <p className="font-display text-4xl font-bold text-fg mt-6 tabular-nums">₹{price.toLocaleString('en-IN')}</p>
               <p className="text-sm text-muted mt-1">paid after the class</p>
               <Button variant="secondary" href="/signup" className="w-full mt-7">
                 Book a class
@@ -147,20 +129,18 @@ export function Pricing() {
             </Card>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="relative h-full rounded-[var(--radius)] p-px bg-gradient-to-br from-accent via-accent/30 to-accent/70">
-              <Card interactive className="h-full p-7 border-transparent">
-                <span className="absolute -top-3 right-6 inline-flex items-center gap-1 rounded-full bg-accent text-accent-fg text-xs font-semibold px-2.5 py-1">
-                  <Sparkles className="size-3" aria-hidden /> Most popular
-                </span>
-                <h3 className="font-display font-bold text-fg text-lg">10-class package</h3>
+            <Card className="h-full p-7 border-accent/60">
+                <h3 className="font-display font-bold text-fg text-lg flex items-center justify-between gap-3">
+                  10-class package
+                  <span className="text-xs font-medium text-accent">Most chosen</span>
+                </h3>
                 <p className="text-muted mt-1">Best value if you&apos;re ready to commit.</p>
-                <p className="font-display text-5xl font-extrabold text-fg mt-6">₹{(price * 10).toLocaleString('en-IN')}</p>
+                <p className="font-display text-4xl font-bold text-fg mt-6 tabular-nums">₹{(price * 10).toLocaleString('en-IN')}</p>
                 <p className="text-sm text-muted mt-1">paid after all 10, or only for classes taken if you stop early</p>
-                <Button href="/signup" icon={BadgeIndianRupee} className="w-full mt-7">
+                <Button href="/signup" className="w-full mt-7">
                   Start the package
                 </Button>
               </Card>
-            </div>
           </Reveal>
         </div>
       </div>
@@ -198,11 +178,10 @@ export function Testimonials() {
 
   return (
     <section className="px-4 sm:px-6 py-20">
-      <div className="max-w-3xl mx-auto">
-        <SectionHeading eyebrow="Reviews" title="What students say" />
-        <Reveal>
-          <Card className="relative p-8 sm:p-10 text-center min-h-[220px] flex flex-col justify-center overflow-hidden">
-            <Quote className="absolute top-5 left-5 size-10 text-accent/20" aria-hidden />
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading title="What students say" />
+        <Reveal className="max-w-3xl">
+          <Card className="relative p-8 sm:p-10 min-h-[200px] flex flex-col justify-center overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.figure
                 key={review.id}
@@ -218,7 +197,7 @@ export function Testimonials() {
             </AnimatePresence>
           </Card>
           {reviews.length > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-5">
+            <div className="flex items-center gap-3 mt-5">
               <button type="button" onClick={() => go(-1)} className="p-2 rounded-full text-muted hover:text-fg hover:bg-surface-2 cursor-pointer" aria-label="Previous review">
                 <ChevronLeft className="size-4" />
               </button>
@@ -266,23 +245,21 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0)
   return (
     <section className="px-4 sm:px-6 py-20">
-      <div className="max-w-2xl mx-auto">
-        <SectionHeading eyebrow="FAQ" title="Questions, answered" />
-        <Reveal className="space-y-3">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading title="Common questions" />
+        <Reveal className="border-t border-border max-w-3xl">
           {FAQ.map((item, i) => {
             const isOpen = open === i
             return (
-              <div key={item.q} className={`rounded-[var(--radius)] border bg-surface transition-colors ${isOpen ? 'border-accent/40' : 'border-border'}`}>
+              <div key={item.q} className="border-b border-border">
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center justify-between gap-4 text-left p-5 font-display font-semibold text-fg cursor-pointer"
+                  className="w-full flex items-center justify-between gap-4 text-left py-5 font-medium text-fg cursor-pointer"
                 >
                   {item.q}
-                  <span className="grid place-items-center size-7 rounded-full bg-surface-2 text-accent shrink-0">
-                    {isOpen ? <Minus className="size-4" /> : <Plus className="size-4" />}
-                  </span>
+                  {isOpen ? <Minus className="size-4 text-muted shrink-0" aria-hidden /> : <Plus className="size-4 text-muted shrink-0" aria-hidden />}
                 </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
@@ -293,7 +270,7 @@ export function Faq() {
                       transition={{ duration: m.duration(0.3) }}
                       className="overflow-hidden"
                     >
-                      <p className="px-5 pb-5 text-muted">{item.a}</p>
+                      <p className="pb-5 text-muted leading-relaxed">{item.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -309,18 +286,19 @@ export function Faq() {
 export function CallToAction() {
   return (
     <section className="px-4 sm:px-6 py-20">
-      <Reveal className="max-w-5xl mx-auto">
-        <div className="relative overflow-hidden rounded-[calc(var(--radius)*1.5)] border border-accent/30 bg-surface px-6 py-14 sm:px-14 text-center">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklab,var(--accent)_22%,transparent),transparent_65%)]" aria-hidden />
-          <div className="relative">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-fg">Ready to take the wheel?</h2>
-            <p className="text-muted mt-3 max-w-lg mx-auto">Create a free account and book your first lesson today. No payment until after your class.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-              <Button size="lg" href="/signup" icon={ArrowRight} iconRight>
-                Create my account
+      <Reveal className="max-w-6xl mx-auto">
+        <div className="rounded-[var(--radius)] border border-border bg-surface px-6 py-10 sm:px-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-fg">Ready to book your first lesson?</h2>
+            <p className="text-muted mt-2 max-w-lg">Creating an account is free, and you pay nothing until after your class.</p>
+          </div>
+          <div>
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+              <Button size="lg" href="/signup">
+                Create an account
               </Button>
               <Button size="lg" variant="ghost" href="/login">
-                I already have an account
+                Log in
               </Button>
             </div>
           </div>
@@ -330,12 +308,11 @@ export function CallToAction() {
   )
 }
 
-export function SectionHeading({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) {
+export function SectionHeading({ title, subtitle, id }: { title: string; subtitle?: string; id?: string }) {
   return (
-    <Reveal className="text-center mb-12">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
-      <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-fg mt-3">{title}</h2>
-      {subtitle && <p className="text-muted mt-3">{subtitle}</p>}
+    <Reveal className="mb-10">
+      <h2 id={id} className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-fg">{title}</h2>
+      {subtitle && <p className="text-muted mt-2">{subtitle}</p>}
     </Reveal>
   )
 }

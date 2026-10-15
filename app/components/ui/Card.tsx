@@ -14,10 +14,10 @@ export default function Card({ interactive, className = '', children }: Props) {
   const m = useMotionProfile()
   return (
     <motion.div
-      whileHover={interactive && m.hover ? { y: -4 } : undefined}
+      whileHover={interactive && m.hover ? { y: -2 } : undefined}
       transition={m.spring}
       className={`bg-surface border border-border rounded-[var(--radius)] p-5 transition-colors duration-200 ${
-        interactive ? 'hover:border-accent/50 hover:shadow-[0_12px_40px_-16px_var(--accent)]' : ''
+        interactive ? 'hover:border-muted/50' : ''
       } ${className}`}
     >
       {children}

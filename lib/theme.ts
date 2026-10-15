@@ -50,7 +50,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   preset: 'midnight',
   accentOverride: null,
   radius: 'soft',
-  background: 'glow',
+  background: 'none',
   motion: {
     intensity: 'subtle',
     speed: 1,

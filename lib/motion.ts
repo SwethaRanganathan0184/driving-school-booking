@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducedMotion } from 'motion/react'
+import { useSyncExternalStore } from 'react'
 import { useSiteTheme } from '@/app/components/ThemeProvider'
 import type { MotionIntensity } from '@/lib/theme'
 
@@ -38,9 +38,26 @@ export function feelFor(intensity: MotionIntensity): Feel {
   }
 }
 
+const REDUCED_QUERY = '(prefers-reduced-motion: reduce)'
+
+function subscribeReduced(cb: () => void) {
+  const mq = window.matchMedia(REDUCED_QUERY)
+  mq.addEventListener('change', cb)
+  return () => mq.removeEventListener('change', cb)
+}
+
+/**
+ * Like motion's useReducedMotion, but hydration-safe: the server and the first client render both
+ * report false, then React re-renders with the real value. Reading the media query directly during
+ * hydration made the markup differ, and React kept the server's opacity:0, leaving pages blank.
+ */
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCED_QUERY).matches, () => false)
+}
+
 export function useMotionProfile(): MotionProfile {
   const { settings } = useSiteTheme()
-  const reduced = useReducedMotion()
+  const reduced = usePrefersReducedMotion()
   const { intensity, speed, scrollEffects, hoverEffects, pageTransitions } = settings.motion
   const enabled = intensity !== 'off' && !reduced
   const feel = feelFor(enabled ? intensity : 'off')

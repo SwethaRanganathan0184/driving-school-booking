@@ -65,7 +65,7 @@ Changes preview live for the admin only; **Publish** makes them live for everyon
 
 - Presets: Midnight Gold (default), Racing Red, Daylight. Visitors can flip to the light theme with the sun/moon button.
 - Accent colour, corner style, background (glow / grid / road lines / none)
-- Motion: intensity (off / subtle / playful), speed, and toggles for scroll animations (steering wheel, road car, journey), hover effects and page transitions. Visitors with "reduce motion" enabled always get a static site.
+- Motion: intensity (off / subtle / playful), speed, and toggles for scroll animations (steering wheel, journey), hover effects and page transitions. Visitors with "reduce motion" enabled always get a static site.
 - Branding: site name, tagline, logo and favicon uploads
 - Business: price per class and footer contact details
 
@@ -75,7 +75,7 @@ Changes preview live for the admin only; **Publish** makes them live for everyon
 app/
   actions/            server actions (publish settings, create instructor)
   admin/_components/  Overview, Instructors, Feedback and Studio panels
-  components/         shell (Navbar, Footer, Background, ScrollRoad), home sections, ui kit
+  components/         shell (Navbar, Footer, Background), home sections, ui kit
   customer/ instructor/ profile/ login/ signup/ …  routes
 lib/
   theme.ts            presets, settings schema and validation

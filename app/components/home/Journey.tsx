@@ -2,17 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
-import { CalendarCheck, CarFront, Flag, UserPlus } from 'lucide-react'
 import { useMotionProfile } from '@/lib/motion'
 import { CarShape } from '../CarIcon'
 
 const ROAD = 'M 40 470 C 220 470 210 330 380 320 S 600 170 720 200 S 900 150 960 60'
 
 const STEPS = [
-  { at: 0.04, icon: UserPlus, title: 'Sign up', body: 'Create an account with email or Google in under a minute.' },
-  { at: 0.36, icon: CarFront, title: 'Add your car', body: 'Lessons happen in your own car. Tell us the make and transmission.' },
-  { at: 0.68, icon: CalendarCheck, title: 'Book a slot', body: 'Pick an instructor and an hour that suits you.' },
-  { at: 0.97, icon: Flag, title: 'Drive, then pay', body: 'Take your lesson and settle up in person afterwards.' },
+  { at: 0.04, title: 'Sign up', body: 'Create an account with email or Google in under a minute.' },
+  { at: 0.36, title: 'Add your car', body: 'Lessons happen in your own car. Tell us the make and transmission.' },
+  { at: 0.68, title: 'Book a slot', body: 'Pick an instructor and an hour that suits you.' },
+  { at: 0.97, title: 'Drive, then pay', body: 'Take your lesson and settle up in person afterwards.' },
 ]
 
 /** "How it works" as a winding road. Scrolling drives a car along it and lights up each step as it passes. */
@@ -90,24 +89,21 @@ export default function Journey() {
         </svg>
       </div>
 
-      <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {STEPS.map(({ icon: Icon, title, body }, i) => {
+      <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 mt-8">
+        {STEPS.map(({ title, body }, i) => {
           const on = i < shown
           return (
             <motion.li
               key={title}
-              animate={{ opacity: on ? 1 : 0.45, y: on ? 0 : 6 }}
-              transition={{ duration: m.duration(0.4) }}
-              className={`rounded-[var(--radius)] border p-5 bg-surface transition-colors ${on ? 'border-accent/50' : 'border-border'}`}
+              animate={{ opacity: on ? 1 : 0.5 }}
+              transition={{ duration: m.duration(0.3) }}
+              className={`border-t-2 pt-4 transition-colors ${on ? 'border-accent' : 'border-border'}`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <span className={`grid place-items-center size-9 rounded-full ${on ? 'bg-accent text-accent-fg' : 'bg-surface-2 text-muted'}`}>
-                  <Icon className="size-4" aria-hidden />
-                </span>
-                <span className="text-xs uppercase tracking-widest text-muted">Step {i + 1}</span>
-              </div>
-              <h3 className="font-display font-bold text-fg">{title}</h3>
-              <p className="text-sm text-muted mt-1">{body}</p>
+              <h3 className="font-semibold text-fg">
+                <span className="text-muted tabular-nums mr-2">{i + 1}.</span>
+                {title}
+              </h3>
+              <p className="text-sm text-muted mt-1.5 leading-relaxed">{body}</p>
             </motion.li>
           )
         })}

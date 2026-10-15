@@ -61,7 +61,8 @@ export function ThemeProvider({
   const [preview, setPreview] = useState<SiteSettings | null>(null)
   const mode = useSyncExternalStore<Mode>(subscribe, readMode, () => 'auto')
   const settings = preview ?? published
-  const activePreset = resolvePreset(settings.preset, mode)
+  // While previewing in the Studio, show the chosen preset exactly, ignoring this browser's light/dark choice.
+  const activePreset = preview ? settings.preset : resolvePreset(settings.preset, mode)
   const isLight = activePreset === 'light'
   const firstRender = useRef(true)
 
