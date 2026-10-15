@@ -11,9 +11,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
       className="flex-1 flex flex-col"
-      initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      transition={{ duration: m.duration(0.45), ease: [0.22, 1, 0.36, 1] }}
+      // Opacity only: a leftover filter or transform on this wrapper would pin every position:fixed
+      // child (Studio publish bar, dialogs) to the page instead of the screen.
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: m.duration(0.3), ease: 'easeOut' }}
     >
       {children}
     </motion.div>
