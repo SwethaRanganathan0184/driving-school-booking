@@ -38,8 +38,20 @@ export default function Footer() {
           </div>
         )}
       </div>
-      <div className="border-t border-border py-4 text-center text-xs text-muted">
-        © {new Date().getFullYear()} {settings.siteName}. All rights reserved.
+      <div className="border-t border-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-muted">
+          <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
+          <p>
+            Built by{' '}
+            <a href="https://github.com/SwethaRanganathan0184" target="_blank" rel="noopener noreferrer" className="text-fg/80 hover:text-accent underline-offset-2 hover:underline">
+              Swetha
+            </a>{' '}
+            and{' '}
+            <a href="https://github.com/nh-44" target="_blank" rel="noopener noreferrer" className="text-fg/80 hover:text-accent underline-offset-2 hover:underline">
+              Naveen
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   )
