@@ -13,7 +13,6 @@ export type SiteSettings = {
     speed: number
     scrollEffects: boolean
     hoverEffects: boolean
-    pageTransitions: boolean
   }
   siteName: string
   tagline: string
@@ -56,7 +55,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     speed: 1,
     scrollEffects: true,
     hoverEffects: true,
-    pageTransitions: true,
   },
   siteName: 'DriveWise',
   tagline: 'Control the Wheel. Command the Road.',
@@ -104,7 +102,6 @@ export function mergeSettings(raw: unknown): SiteSettings {
       speed: Math.min(2, Math.max(0.5, speed)),
       scrollEffects: bool(m.scrollEffects, d.motion.scrollEffects),
       hoverEffects: bool(m.hoverEffects, d.motion.hoverEffects),
-      pageTransitions: bool(m.pageTransitions, d.motion.pageTransitions),
     },
     siteName: text(r.siteName, d.siteName, 40),
     tagline: text(r.tagline, d.tagline, 120),

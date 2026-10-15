@@ -15,12 +15,11 @@ export default function Reveal({
 }) {
   const m = useMotionProfile()
 
-  if (!m.scroll) return <div className={className}>{children}</div>
-
+  // Always a motion.div (initial={false} when off) so toggling the setting never remounts the children.
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: m.revealDistance }}
+      initial={m.scroll ? { opacity: 0, y: m.revealDistance } : false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: m.duration(0.7), delay: m.duration(delay), ease: [0.22, 1, 0.36, 1] }}

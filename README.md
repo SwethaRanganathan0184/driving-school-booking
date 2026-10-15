@@ -65,7 +65,7 @@ Changes preview live for the admin only; **Publish** makes them live for everyon
 
 - Presets: Midnight Gold (default), Racing Red, Daylight. Visitors can flip to the light theme with the sun/moon button.
 - Accent colour, corner style, background (glow / grid / road lines / none)
-- Motion: intensity (off / subtle / playful), speed, and toggles for scroll animations (steering wheel, journey), hover effects and page transitions. Visitors with "reduce motion" enabled always get a static site.
+- Motion: intensity (off / subtle / playful), speed, and toggles for scroll animations (steering wheel, journey) and hover effects. Pages fade in on navigation unless intensity is Off. Visitors with "reduce motion" enabled always get a static site.
 - Branding: site name, tagline, logo and favicon uploads
 - Business: price per class and footer contact details
 

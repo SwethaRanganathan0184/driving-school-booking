@@ -9,7 +9,6 @@ export type MotionProfile = {
   enabled: boolean
   hover: boolean
   scroll: boolean
-  pageTransitions: boolean
   /** Scale applied while hovering / pressing interactive elements. */
   hoverScale: number
   pressScale: number
@@ -58,7 +57,7 @@ function usePrefersReducedMotion() {
 export function useMotionProfile(): MotionProfile {
   const { settings } = useSiteTheme()
   const reduced = usePrefersReducedMotion()
-  const { intensity, speed, scrollEffects, hoverEffects, pageTransitions } = settings.motion
+  const { intensity, speed, scrollEffects, hoverEffects } = settings.motion
   const enabled = intensity !== 'off' && !reduced
   const feel = feelFor(enabled ? intensity : 'off')
 
@@ -66,7 +65,6 @@ export function useMotionProfile(): MotionProfile {
     enabled,
     hover: enabled && hoverEffects,
     scroll: enabled && scrollEffects,
-    pageTransitions: enabled && pageTransitions,
     hoverScale: feel.hoverScale,
     pressScale: feel.pressScale,
     revealDistance: feel.revealDistance,

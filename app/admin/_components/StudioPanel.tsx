@@ -228,7 +228,6 @@ export default function StudioPanel() {
           <div className="space-y-4">
             <Toggle label="Scroll animations" hint="Steering wheel, journey and reveal-on-scroll" checked={draft.motion.scrollEffects} onChange={(scrollEffects) => updateMotion({ scrollEffects })} />
             <Toggle label="Hover & press effects" hint="Buttons and cards lift and spring" checked={draft.motion.hoverEffects} onChange={(hoverEffects) => updateMotion({ hoverEffects })} />
-            <Toggle label="Page transitions" hint="Pages fade in when navigating" checked={draft.motion.pageTransitions} onChange={(pageTransitions) => updateMotion({ pageTransitions })} />
           </div>
           <MotionPreview replayKey={replay} />
           <Button variant="secondary" size="sm" icon={RotateCcw} onClick={() => setReplay((r) => r + 1)}>Replay animations</Button>
